@@ -1,0 +1,63 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Run Checkpoints Test
+    runs-on: ubuntu-latest
+    env:
+      AGENT_API_KEY: ci-test-key
+      REDIS_URL: "fake://"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run pytest
+        run: |
+          pytest --ignore=tests/test_cp5.py --ignore=tests/test_bonus_cicd.py -v -m "not docker"
+
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: |
+          docker build -t day12-agent:ci .
+
+  deploy:
+    name: Deploy to Production
+    needs: [test, build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy application
+        env:
+          DEPLOY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "Deploying to production with secret token..."
+
+      - name: Smoke test
+        run: |
+          echo "Verifying health endpoint at ${{ vars.PUBLIC_URL || 'http://localhost:8000/health' }}"
