@@ -6,7 +6,7 @@
 > Cách trả lời: điền câu trả lời chi tiết cho từng câu hỏi bên dưới.
 > `grade.py` đếm số câu đã trả lời (15 điểm cho 10 câu).
 >
-> Họ và tên: Lưu Xuân Dũng  Mã học viên: L3A202602746
+> Họ và tên: Lưu Xuân Dũng  Mã học viên: 2A202602746
 
 ---
 
